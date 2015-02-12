@@ -1,0 +1,10 @@
+{
+    "browser": true,
+	"curly": true,
+    "devel": true,
+    "esnext": true,
+	"latedef": true,
+	"maxerr": 50,
+    "undef": true,
+    "unused": true
+}

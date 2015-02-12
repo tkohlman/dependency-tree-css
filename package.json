@@ -1,0 +1,38 @@
+{
+  "name": "dependency-tree-css",
+  "version": "0.0.1",
+  "description": "Get the URL dependencies of a CSS file.",
+  "main": "index.js",
+  "bin": {
+    "tree": "bin/cli.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tkohlman/dependency-tree-css.git"
+  },
+  "keywords": [
+    "dependency",
+    "graph",
+    "tree",
+    "CSS"
+  ],
+  "author": {
+    "name": "Thomas Kohlman",
+    "email": "thomaskohlman@gmail.com"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tkohlman/dependency-tree-css/issues"
+  },
+  "homepage": "https://github.com/tkohlman/dependency-tree-css",
+  "dependencies": {
+    "resolve-dependency-path": "~1.0.1"
+  },
+  "maintainers": [
+    {
+      "name": "tkohlman",
+      "email": "thomaskohlman@gmail.com"
+    }
+  ],
+  "directories": {}
+}

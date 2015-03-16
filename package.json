@@ -1,11 +1,8 @@
 {
   "name": "dependency-tree-css",
-  "version": "0.0.1",
+  "version": "0.1.6",
   "description": "Get the URL dependencies of a CSS file.",
   "main": "index.js",
-  "bin": {
-    "tree": "bin/cli.js"
-  },
   "repository": {
     "type": "git",
     "url": "https://github.com/tkohlman/dependency-tree-css.git"
@@ -26,6 +23,7 @@
   },
   "homepage": "https://github.com/tkohlman/dependency-tree-css",
   "dependencies": {
+    "mkdirp": "latest",
     "resolve-dependency-path": "~1.0.1"
   },
   "maintainers": [

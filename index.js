@@ -1,6 +1,8 @@
 
 
 var fs                      = require('fs');
+var mkdirp                  = require('mkdirp');
+var path                    = require('path');
 var resolveDependencyPath   = require('resolve-dependency-path');
 var stream                  = require('./stream');
 
@@ -17,9 +19,9 @@ function removeDuplicates(list) {
     var unique = [];
 
     list.forEach(function(item) {
-        if (!cache[item.absolute]) {
+        if (!cache[item.source]) {
             unique.push(item);
-            cache[item.absolute] = true;
+            cache[item.source] = true;
         }
     });
 
@@ -35,8 +37,8 @@ function getDependencies(file) {
     var dependencies = [];
 
     try {
-        console.log("Finding dependencies");
-        console.log(file.inspect());
+        //console.log("Finding dependencies");
+        //console.log(file.inspect());
 
         var content = String(file.contents);
         var re = /url\(([\s])?([\"|\'])?(.*?)([\"|\'])?([\s])?\)/g;
@@ -47,7 +49,9 @@ function getDependencies(file) {
             var rule = matches[0];
             rule = rule.replace(/\'?\"?\)+$/, "");
             rule = rule.replace(/^url\(\'?\"?/, "");
-            console.log(rule);
+            rule = rule.replace(/\?.*$/, "");
+            rule = rule.replace(/#.*$/, "");
+            //console.log(rule);
             dependencies.push(rule);
         }
     } catch (e) {
@@ -62,24 +66,29 @@ function getDependencies(file) {
  * @param  {String} root
  * @return {String[]}
  */
-function traverse(file, root) {
+function traverse(file, destination, root) {
     var tree = [];
 
-    console.log('Traversing ' + file.path);
+    //console.log('Traversing ' + file.path);
     var dependencies = getDependencies(file);
 
     if (dependencies.length) {
+        var directory = path.dirname(destination);
 
         dependencies = dependencies.map(function(dep) {
             var dependency = {
-                absolute: resolveDependencyPath(dep, file.path, root),
-                relative: dep
+                source: resolveDependencyPath(dep, file.path, root),
+                destination: resolveDependencyPath(dep,  destination, directory)
             };
-            console.log(dependency);
+            //console.log(dependency);
             return dependency;
         })
         .filter(function(dependency) {
-            return fs.existsSync(dependency.absolute);
+            var exists = fs.existsSync(dependency.source);
+            //if (!exists) {
+            //    console.log(dependency.source + ' does not exist');
+            //}
+            return exists;
         });
     }
 
@@ -95,6 +104,13 @@ function traverse(file, root) {
 function copyFile(source, destination) {
 
     console.log('Copy ' + source + ' to ' + destination);
+
+    var directory = path.dirname(destination);
+    try {
+        mkdirp.sync(directory);
+    } catch (error) {
+        console.error("mkdirp failed: " + error);
+    }
 
     try {
         fs.writeFileSync(destination, fs.readFileSync(source));
@@ -120,10 +136,23 @@ function processFile(file, root, destination, callback) {
     }
     console.log(file.path);
 
-    var results = traverse(file, root);
+    var results = traverse(file, destination, root);
+
+    var directory = path.dirname(destination);
+    //console.log("destination directory: ");
+    //console.log(root);
+    //console.log(destination);
+    //var absoluteDestination = resolveDependencyPath(directory, '.', root) + '/';
+    //console.log(absoluteDestination);
 
     for (var index = 0; index < results.length; ++index) {
-        copyFile(results[index].absolute, destination + results[index].relative, callback);
+
+
+        //var fileDestination = resolveDependencyPath(results[index].relative,  destination, directory);
+        //console.log(fileDestination);
+
+        //copyFile(results[index].absolute, destination + results[index].relative, callback);
+        copyFile(results[index].source, results[index].destination, callback);
     }
 
     return results;
@@ -139,7 +168,7 @@ module.exports = function (options) {
     if (destination === undefined) {
         throw new Error('Destination not specified.');
     }
-    console.log(destination);
+    //console.log(destination);
 
     return stream(function (file, callback) {
         try {
